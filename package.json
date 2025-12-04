@@ -1,0 +1,38 @@
+{
+  "name": "defi-prec-back",
+  "version": "1.0.0",
+  "description": "NIRDonia Village Council API Backend",
+  "type": "module",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node --watch server/server.js",
+    "server": "node server/server.js",
+    "server:dev": "node --watch server/server.js",
+    "deploy": "bash deploy.sh production",
+    "deploy:dev": "bash deploy.sh development",
+    "pm2:start": "pm2 start ecosystem.config.js --env production",
+    "pm2:stop": "pm2 stop defi-prec-api",
+    "pm2:restart": "pm2 restart defi-prec-api",
+    "pm2:logs": "pm2 logs defi-prec-api",
+    "pm2:monit": "pm2 monit"
+  },
+  "keywords": [
+    "api",
+    "express",
+    "mongodb",
+    "council"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "mongoose": "^8.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+
