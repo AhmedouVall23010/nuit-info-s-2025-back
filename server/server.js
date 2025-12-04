@@ -30,18 +30,25 @@ app.use(express.urlencoded({ extended: true }));
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  console.error('❌ MONGODB_URI is not defined in .env file');
-  process.exit(1);
+  console.error('❌ MONGODB_URI is not defined in environment variables');
+  // Don't exit in Vercel environment, let it handle the error
+  if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
+    process.exit(1);
+  }
+} else {
+  // Connect to MongoDB
+  mongoose.connect(MONGODB_URI)
+  .then(() => {
+    console.log('✅ Connected to MongoDB Atlas');
+  })
+  .catch((error) => {
+    console.error('❌ MongoDB connection error:', error);
+    // Don't exit in Vercel environment
+    if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
+      process.exit(1);
+    }
+  });
 }
-
-mongoose.connect(MONGODB_URI)
-.then(() => {
-  console.log('✅ Connected to MongoDB Atlas');
-})
-.catch((error) => {
-  console.error('❌ MongoDB connection error:', error);
-  process.exit(1);
-});
 
 // Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
@@ -176,12 +183,15 @@ app.use((req, res) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📍 API available at http://localhost:${PORT}/api/council`);
-  console.log(`📚 Swagger documentation at http://localhost:${PORT}/api-docs`);
-});
+// Start server only if not in Vercel environment
+// Vercel will handle the serverless function, so we don't need app.listen()
+if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📍 API available at http://localhost:${PORT}/api/council`);
+    console.log(`📚 Swagger documentation at http://localhost:${PORT}/api-docs`);
+  });
+}
 
 export default app;
 
