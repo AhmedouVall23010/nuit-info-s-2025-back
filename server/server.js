@@ -55,15 +55,71 @@ app.get('/health', (req, res) => {
 
 // Root endpoint
 app.get('/', (req, res) => {
+  const baseUrl = `${req.protocol}://${req.get('host')}`;
+  
   res.json({
+    success: true,
     message: 'NIRDonia Village Council API',
     version: '1.0.0',
+    status: 'running',
+    timestamp: new Date().toISOString(),
+    server: {
+      port: PORT,
+      environment: process.env.NODE_ENV || 'development',
+      nodeVersion: process.version
+    },
+    database: {
+      status: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+      name: mongoose.connection.name || 'nirdonia'
+    },
     endpoints: {
-      health: '/health',
-      posts: '/api/council/posts',
-      createPost: 'POST /api/council/posts',
-      vote: 'PUT /api/council/posts/:id/vote',
-      delete: 'DELETE /api/council/posts/:id'
+      root: {
+        method: 'GET',
+        path: '/',
+        description: 'API information and endpoints list'
+      },
+      health: {
+        method: 'GET',
+        path: '/health',
+        url: `${baseUrl}/health`,
+        description: 'Server health check'
+      },
+      getPosts: {
+        method: 'GET',
+        path: '/api/council/posts',
+        url: `${baseUrl}/api/council/posts`,
+        description: 'Get all council posts (sorted by newest)'
+      },
+      createPost: {
+        method: 'POST',
+        path: '/api/council/posts',
+        url: `${baseUrl}/api/council/posts`,
+        description: 'Create a new council post',
+        body: {
+          content: 'string (required, max 500 chars)',
+          author: 'string (optional)',
+          isAnonymous: 'boolean (optional)',
+          taskType: 'string (optional: repair, replace, privacy, learn, general)'
+        }
+      },
+      votePost: {
+        method: 'PUT',
+        path: '/api/council/posts/:id/vote',
+        url: `${baseUrl}/api/council/posts/:id/vote`,
+        description: 'Vote on a post (increment or decrement)',
+        body: {
+          action: 'string (required: "increment" or "decrement")'
+        }
+      },
+      deletePost: {
+        method: 'DELETE',
+        path: '/api/council/posts/:id',
+        url: `${baseUrl}/api/council/posts/:id`,
+        description: 'Delete a council post (for moderation)'
+      }
+    },
+    documentation: {
+      readme: `${baseUrl}/api/council`
     }
   });
 });
