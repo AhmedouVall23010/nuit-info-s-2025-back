@@ -15,6 +15,35 @@ const generateHash = (content, author) => {
   return Math.abs(hash).toString(16).substring(0, 8).toUpperCase();
 };
 
+/**
+ * @swagger
+ * /api/council/posts:
+ *   get:
+ *     summary: Get all council posts
+ *     description: Retrieve all council posts sorted by newest first (limited to 20 most recent)
+ *     tags: [Council Posts]
+ *     responses:
+ *       200:
+ *         description: List of council posts retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/CouncilPost'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 // GET all posts - sorted by newest first
 router.get('/posts', async (req, res) => {
   try {
@@ -35,6 +64,56 @@ router.get('/posts', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/council/posts:
+ *   post:
+ *     summary: Create a new council post
+ *     description: Create a new post in the council board
+ *     tags: [Council Posts]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreatePostRequest'
+ *           example:
+ *             content: "Today I installed Linux on my school laptop"
+ *             author: "username"
+ *             isAnonymous: false
+ *             taskType: "repair"
+ *     responses:
+ *       201:
+ *         description: Post created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/CouncilPost'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       409:
+ *         description: Post with this hash already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 // POST create new post
 router.post('/posts', async (req, res) => {
   try {
@@ -91,6 +170,61 @@ router.post('/posts', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/council/posts/{id}/vote:
+ *   put:
+ *     summary: Vote on a council post
+ *     description: Increment or decrement the vote count of a post
+ *     tags: [Council Posts]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The post ID
+ *         example: "507f1f77bcf86cd799439011"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/VoteRequest'
+ *           example:
+ *             action: "increment"
+ *     responses:
+ *       200:
+ *         description: Vote updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/CouncilPost'
+ *       400:
+ *         description: Invalid action (must be 'increment' or 'decrement')
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Post not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 // PUT update vote count
 router.put('/posts/:id/vote', async (req, res) => {
   try {
@@ -133,6 +267,48 @@ router.put('/posts/:id/vote', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/council/posts/{id}:
+ *   delete:
+ *     summary: Delete a council post
+ *     description: Delete a post from the council board (for moderation)
+ *     tags: [Council Posts]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The post ID
+ *         example: "507f1f77bcf86cd799439011"
+ *     responses:
+ *       200:
+ *         description: Post deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Post deleted successfully"
+ *       404:
+ *         description: Post not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 // DELETE post (for moderation)
 router.delete('/posts/:id', async (req, res) => {
   try {

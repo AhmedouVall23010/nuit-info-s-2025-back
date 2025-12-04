@@ -2,6 +2,8 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './config/swagger.js';
 import councilRoutes from './routes/council.js';
 
 // Load environment variables
@@ -41,9 +43,40 @@ mongoose.connect(MONGODB_URI)
   process.exit(1);
 });
 
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'NIRDonia API Documentation'
+}));
+
 // Routes
 app.use('/api/council', councilRoutes);
 
+/**
+ * @swagger
+ * /health:
+ *   get:
+ *     summary: Health check endpoint
+ *     description: Returns the health status of the server
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Server is running
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: OK
+ *                 message:
+ *                   type: string
+ *                   example: Server is running
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ */
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({
@@ -119,6 +152,7 @@ app.get('/', (req, res) => {
       }
     },
     documentation: {
+      swagger: `${baseUrl}/api-docs`,
       readme: `${baseUrl}/api/council`
     }
   });
@@ -146,6 +180,7 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📍 API available at http://localhost:${PORT}/api/council`);
+  console.log(`📚 Swagger documentation at http://localhost:${PORT}/api-docs`);
 });
 
 export default app;
